@@ -3,9 +3,10 @@ import uvicorn
 from model import Model
 import logging
 import os
+from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO)
-
+load_dotenv()
 app = FastAPI() 
 model_name = os.getenv("MODEL_NAME")
 model= Model(model_name)
