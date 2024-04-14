@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 app = FastAPI() 
+router = APIRouter()
 model_name = os.getenv("MODEL_NAME")
 model= Model(model_name)
 
@@ -23,7 +24,7 @@ async def data(data: str):
     except Exception as e:
         logging.error(f"Error: {e}")
         return {"error": "An error occurred"}
-@router.porst('/predict_batch')
+@router.post('/predict_batch')
 async def data(data: list):
     try:
         predictions = []
@@ -37,5 +38,5 @@ async def data(data: list):
 app.include_router(router)
 
 if __name__== "__main__":
-    uvicorn.run("app:app", roload=True, port =6000, host='0.0.0.0')
+    uvicorn.run("app:app", reload=True, port =6000, host='0.0.0.0')
 

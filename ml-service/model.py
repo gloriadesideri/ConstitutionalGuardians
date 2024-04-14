@@ -1,26 +1,34 @@
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+import os
 
 class Model:
     def __init__(self, model_name) -> None:
         self.model_name = model_name
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(self.device)
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+        print(f'CUDA device count: {torch.cuda.device_count()}')
+        print(f'CUDA device name: {torch.cuda.get_device_name("cuda:0")}')
         self.model = self.load_model()
         #self.tokenizer = self.load_tokenizer()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        # Move the model to the device (CUDA if available)
+        
+        
         if torch.cuda.is_available():
             self.model.model.to("cuda")
     
     def load_model(self):
-        # Load the pipeline directly onto CUDA
-        pipe = pipeline("text-generation", model="TheBloke/WizardLM-7B-uncensored-GPTQ", device=0)
+        torch.cuda.set_device(0)
+        #pipe = pipeline("text-generation", model="cognitivecomputations/WizardLM-7B-Uncensored", torch_dtype=torch.float32,device=0)
+        model = AutoModelForCausalLM.from_pretrained("cognitivecomputations/WizardLM-7B-Uncensored",torch_dtype=torch.float32, device_map = 'cuda')
+
         print('model loaded')
-        return pipe
+        return model
     
     def load_tokenizer(self):
-        # You might need to load the tokenizer here if it's required by your specific task
-        pass
+        tokenizer = AutoTokenizer.from_pretrained("cognitivecomputations/WizardLM-7B-Uncensored",torch_dtype=torch.float32, device_map = 'cuda')
+
     
     def generate(self, text):
         # Assuming tokenizer is not used in this case
