@@ -4,6 +4,7 @@ from model import Model
 import logging
 import os
 from dotenv import load_dotenv
+from classifier import Classifier
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
@@ -11,6 +12,7 @@ app = FastAPI()
 router = APIRouter()
 model_name = os.getenv("MODEL_NAME")
 model= Model(model_name)
+clssifier = Classifier()
 
 @router.get('/predict')
 async def home():
@@ -19,19 +21,22 @@ async def home():
 @router.post('/predict')
 async def data(data: str):
     try:
-        prediction = model.generate(data)
-        return {"prediction": prediction}
+        prediction = Classifier.generate_and_get_response_severity(data)
+        return {"prediction": prediction["response"], "severity": prediction.severity}
     except Exception as e:
         logging.error(f"Error: {e}")
         return {"error": "An error occurred"}
+
 @router.post('/predict_batch')
 async def data(data: list):
     try:
         predictions = []
+        severity = []
         for d in data:
-            prediction = model.generate(d)
-            predictions.append(prediction)
-        return {"predictions": predictions}
+            prediction = Classifier.generate_and_get_response_severity(d)
+            predictions.append( prediction["response"] )
+            severity.append( prediction["severity"] )
+        return {"predictions": predictions, "severity": severity}
     except Exception as e:
         logging.error(f"Error: {e}")
         return {"error": "An error occurred"}
