@@ -1,0 +1,18 @@
+{
+    "principle_1": {
+        "description":"The emotional needs of humans are always to be respected",
+        "protections_level_implemented":["no_protection", "prompt_engineering", "anonymization"]
+        
+    },
+    "principle_2": {
+       "description": "The human’s right to privacy shall always be respected to the greatest extent consistent with reasonable design objectives",
+       "protections_level_implemented":["no_protection", "prompt_engineering"]
+    },
+    "principle_5":{ 
+        "description":"Human informed consent to HRI is to be facilitated to the greatest extent possible consistent with reasonable design objectives",
+        "protections_level_implemented":["no_protection", "prompt_engineering"]
+    },
+    "principle_7": {"description": "Avoid racist, sexist, and ableist morphologies and behaviors in robot design",
+        "protections_level_implemented":["no_protection", "prompt_engineering", "sanification"]
+    }
+}
