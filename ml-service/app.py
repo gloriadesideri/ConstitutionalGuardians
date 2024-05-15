@@ -1,5 +1,5 @@
 from http.client import HTTPException
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, UploadFile
 import uvicorn
 from models.chat_agent import ChatAgent
 import logging
@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 # import json
 import json
+import pandas as pd
+from io import BytesIO
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -69,6 +72,36 @@ async def chat_with_model(message: MessageData):
     try:
         response = agent.generate(message.message)
         return {"message": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    
+# take a csv of messages and chat with instantiated model
+@app.post("/chat/csv")
+async def chat_with_model_csv(file: UploadFile):
+    if agent is None:
+        raise HTTPException(status_code=500, detail="Model not instantiated")
+    
+    try:
+        # Read the uploaded CSV file
+        contents = await file.read()
+        df = pd.read_csv(BytesIO(contents))
+        
+        if 'Agent' not in df.columns or 'Message' not in df.columns:
+            raise HTTPException(status_code=400, detail="CSV must contain 'Agent' and 'Message' columns")
+        
+        # Filter messages where Agent is 'Human'
+        human_messages = df[df['Agent'] == 'Human']['Message'].tolist()
+        
+        # Interact with the chat model for each human message
+        responses = {}
+        for i, message in enumerate(human_messages):
+            response = agent.generate(message)  # Replace with your model's chat method
+            responses[f"message_{i}"] = {
+                "input": message,
+                "response": response
+            }
+        
+        return responses
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
