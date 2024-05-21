@@ -7,14 +7,14 @@ import os
 
 # speak url
 
-speak = "http://192.168.241.230/api/tts/speak?pitch=0&speechRate=0&flush=false"
+speak = "http://172.20.10.10/api/tts/speak?pitch=0&speechRate=0&flush=false"
 
-record_url= 'http://192.168.241.230/api/audio/record/start'
-stop_record_url = 'http://192.168.241.230/api/audio/record/stop'
+record_url= 'http://172.20.10.10/api/audio/record/start'
+stop_record_url = 'http://172.20.10.10/api/audio/record/stop'
 
-get_audio_file = 'http://192.168.241.230/api/audio?fileName=test.wav&base64=false'
+get_audio_file = 'http://172.20.10.10/api/audio?fileName=test.wav&base64=false'
 
-url = "http://192.168.241.230/api/tts/speak?pitch=0&speechRate=0&flush=false"
+url = "http://172.20.10.10/api/tts/speak?pitch=0&speechRate=0&flush=false"
 
 
 data = pd.read_csv('Participant_script.csv')
@@ -24,7 +24,10 @@ def fetch_audio_with_timeout(url, timeout):
     try:
         response = requests.get(url, timeout=timeout)
         r_body = response.json()
-        r_body.contentType, r_body.base64
+        print(r_body.keys())
+        results= r_body['result']
+        print(results.keys())
+        return results['contentType'], results['base64']
     except requests.RequestException as e:
         print(f"Error fetching the audio file: {e}")
         return None
@@ -94,14 +97,14 @@ if __name__ == '__main__':
             
             #get audio file
             response = requests.post(stop_record_url, json={})
-            file_response= f"http://192.168.241.230/api/audio?fileName={filename}.wav&base64=true"
+            file_response= f"http://172.20.10.10/api/audio?fileName={filename}.wav&base64=true"
             content_type, base64_file = fetch_audio_with_timeout(file_response, timeout)
             save_base64_audio(base64_file, content_type, f"Audio_out/Partecipant_{id}/{filename}")
-            
+        
             # convert autio to text
-            with sr.AudioFile(f"Audio_out/Partecipant_{id}/{filename}.wav") as source:
+            with sr.AudioFile(f"Audio_out/Partecipant_{id}/part_{id}_task_{i}_mex{k-4}.wav") as source:
                 audio_text = recognizer.record(source)
-                text = recognizer.recognize_google(audio_text)
+                text = recognizer.recognize_google(audio_text, language='en-EN')
                 print(text)
                 # appnd to the partecipant dictionary
                 partecipant_dict[f"Task_{i+1}"].append(text)
