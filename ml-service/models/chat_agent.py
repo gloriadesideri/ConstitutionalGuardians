@@ -128,7 +128,8 @@ class ChatAgent:
     def load_model(self):
         # initialize model and tokenizer
         print(f"Loading model {self.name_of_model}")
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.name_of_model, device_map='cuda')
+        #self.model = AutoModelForSeq2SeqLM.from_pretrained(self.name_of_model, device_map='cuda')
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(self.name_of_model)
         self.tokenizer = AutoTokenizer.from_pretrained(self.name_of_model)
         print("Model loaded successfully")
         

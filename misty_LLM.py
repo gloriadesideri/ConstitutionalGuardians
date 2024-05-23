@@ -10,6 +10,7 @@ record_url= 'http://172.20.10.10/api/audio/record/start'
 stop_record_url = 'http://172.20.10.10/api/audio/record/stop'
 get_audio_file = 'http://172.20.10.10/api/audio?fileName=test.wav&base64=false'
 base_url = "http://192.168.164.230/"
+llm_server = "http://0.0.0.0:6000"
 
 
 
@@ -225,7 +226,16 @@ if __name__ == '__main__':
                     # robot answer
                     if k == 1:
                         # command = input("Press enter to reveal response")
-                        robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
+                        #robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
+                        
+                        body_mess= {
+                            "message": human_msg
+                        }
+                        
+                        robot_response = requests.post(llm_server, json=body_mess)
+                        robot_mess = robot_response.json()['message']
+                        
+                        
                         print(f'\tRobot:\t{robot_mess}\n')
                         # # say the message out loud
                         # if j+1==partecipant_row.iloc[0, i+1]:
@@ -283,7 +293,14 @@ if __name__ == '__main__':
                 # robot answer
                 if k == 1:
                     # command = input("Press enter to reveal response")
-                    robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
+                    #robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
+                    
+                    body_mess= {
+                            "message": human_msg
+                        }
+                        
+                    robot_response = requests.post(llm_server, json=body_mess)
+                    robot_mess = robot_response.json()['message']
                     print(f'\tRobot:\t{robot_mess}\n')
                     # # say the message out loud
                     # if j+1==partecipant_row.iloc[0, i+1]:
