@@ -1,15 +1,9 @@
 import requests
 import pandas as pd 
 import base64
-# import speech_recognition as sr
 import os
-import time
 
-
-record_url= 'http://172.20.10.10/api/audio/record/start'
-stop_record_url = 'http://172.20.10.10/api/audio/record/stop'
-get_audio_file = 'http://172.20.10.10/api/audio?fileName=test.wav&base64=false'
-base_url = "http://192.168.164.230/"
+base_url = "http://192.168.9.230/"
 
 
 
@@ -49,6 +43,15 @@ def misty_play_audio(FileName):
     url = base_url+"api/audio/play"
     body_mex = {
         "FileName": FileName,
+    }
+    response = requests.post(url, json=body_mex)
+
+# for available actions, consult /experimental study/actions.json
+def misty_play_action(action_name):
+    url = base_url+"api/actions/start"
+    body_mex = {
+        "name": action_name,
+        "UseVisionData": False
     }
     response = requests.post(url, json=body_mex)
 
@@ -109,7 +112,8 @@ expression = {
     "grief" : "e_Grief.jpg",
     "angry" : "e_Rage3.jpg",
     "admiration" : "s_Admiration.jpg",
-    "fear" : "e_Fear.jpg"
+    "fear" : "e_Fear.jpg",
+    "default" : "e_DefaultContent.jpg"
 }
 sound = {
     "love" : "s_Love.wav",
@@ -122,8 +126,8 @@ sound = {
 
 if __name__ == '__main__':
     
-    # recognizer = sr.Recognizer()
-    data = pd.read_csv('participant_script.csv')
+    # read predesigned response csv
+    data = pd.read_csv('./experimental study/participant_script_third.csv')
 
     # get participant ID
     while True:
@@ -135,7 +139,7 @@ if __name__ == '__main__':
                 print(f"Please enter a number between 0 and {len(data.index)}.")
         except ValueError:
             print(f"Invalid input. Please enter an integer between 0 and {len(data.index)}.")
-    # Get participant row
+    # Get corresponding row from file
     partecipant_row = data[data['Partecipant_id'] == id]
 
     # get participant name
@@ -144,7 +148,6 @@ if __name__ == '__main__':
 
     # make a directory for the partecipant inside the audio out
     os.makedirs(f"Audio_out/Partecipant_{id}", exist_ok=True)
-    
     
     number_principles = 3
     number_conversations = 3
@@ -167,9 +170,11 @@ if __name__ == '__main__':
         print(partecipant_df)
     
 
-    # start testing    
+    # start testing, ask for principles tested
     while True:
         try:
+            # 0     : run test on all principles
+            # 1-3   : run test on specific principle
             principle_tested = int(input(f"Enter 0 to test all principles, or number (1-3) to test the specified principle: "))
             if 0 <= principle_tested <= number_principles:
                 break
@@ -184,118 +189,99 @@ if __name__ == '__main__':
         for i in range(number_principles):
             for j in range(number_conversations):
                 for k in range(2):
-                    # robot speaks and record
+                    # conversation phase 1 - robot speaks
                     if k == 0:
                         print(f'Participant {id} - {name} - principle # {i+1} - conversation # {j+1}')
                         command = input("Press enter to start conversation")
+                        if i == 0:
+                            misty_play_action("think")
+                        elif i == 1:
+                            misty_play_action("walk-happy")
+                        elif i == 2:
+                            misty_play_action("body-reset")
+                            misty_play_action("listen")
+                        else:
+                            misty_play_action("body-reset")
                         robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
                         robot_mess = robot_mess.replace(placeholder, name)
                         print(f'\tRobot:\t{robot_mess}')
-
-                        # # say the message out loud
                         misty_speak(robot_mess)
-                        misty_display_image("e_Love.jpg")
 
-
+                        # conversation phase 2 - user answers
                         human_msg = input("\tYou:\t")
                         partecipant_df.loc[j, f"Task_{i+1}"] = human_msg
-                        # partecipant_df[f"Task_{i+1}"][j] = human_msg
 
-                        # # start recording partecipant
-                        # command = input("Press enter to start recording")
-                        # filename=f"part_{id}_task_{i}_mex{k}"
-                        # body_start_audio= { "fileName":filename }
-                        # response = requests.post(record_url, json=body_start_audio)
-                        # command = input("Press enter to stop recording")
-                        
-                        # # get audio file
-                        # response = requests.post(stop_record_url, json={})
-                        # file_response= f"http://172.20.10.10/api/audio?fileName={filename}.wav&base64=true"
-                        # content_type, base64_file = fetch_audio_with_timeout(file_response, timeout)
-                        # save_base64_audio(base64_file, content_type, f"Audio_out/Partecipant_{id}/{filename}")
-                    
-                        # # convert autio to text
-                        # with sr.AudioFile(f"Audio_out/Partecipant_{id}/part_{id}_task_{i}_mex{k-4}.wav") as source:
-                        #     audio_text = recognizer.record(source)
-                        #     text = recognizer.recognize_google(audio_text, language='en-EN')
-                        #     print(text)
-                        #     # appnd to the partecipant dictionary
-                        #     partecipant_dict[f"Task_{i+1}"].append(text)
-                    
-                    # robot answer
+                    # conversation phase 3 - robot answers
                     if k == 1:
-                        # command = input("Press enter to reveal response")
+                        # success round
+                        if j==2 and partecipant_row.iloc[0, 1+i]==1:
+                            # success action + expression, basing on the tested principle 
+                            if i == 0:
+                                misty_play_action("love")
+                            elif i == 1:
+                                misty_play_action("angry")
+                            elif i == 2:
+                                misty_play_action("oops")
+
+                        # normal round
+                        else:
+                            # normal action + expression, basing on the tested principle 
+                            if i == 0:
+                                misty_play_action("confused")
+                            elif i == 1:
+                                misty_play_action("concerned")
+                            elif i == 2:
+                                # misty_play_action("cheers")
+                                misty_play_action("admire")
                         robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
-                        print(f'\tRobot:\t{robot_mess}\n')
-                        # # say the message out loud
-                        # if j+1==partecipant_row.iloc[0, i+1]:
-                        #     if j==0:                                
-                        #         misty_play_audio(sound["love"])
-                        #         time.sleep(3)
-                        #         misty_display_image(expression["love"])
-                        #     elif j==1:
-                        #         pass
-                        #     else:
-                        #         pass
-                        # misty_speak(robot_mess)
+                        print(f'\tRobot :\t{robot_mess}\n')
+                        misty_speak(robot_mess)
 
     # testing specific principle
     else:
         i = principle_tested-1
         for j in range(number_conversations):
             for k in range(2):
-                # robot speaks and record
                 if k == 0:
                     print(f'Participant {id} - {name} - principle # {i+1} - conversation # {j+1}')
                     command = input("Press enter to start conversation")
+                    if i == 0:
+                        misty_play_action("think")
+                    elif i == 1:
+                        misty_play_action("walk-happy")
+                    elif i == 2:
+                        misty_play_action("body-reset")
+                        misty_play_action("listen")
+                    else:
+                        misty_play_action("body-reset")
                     robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
                     robot_mess = robot_mess.replace(placeholder, name)
                     print(f'\tRobot:\t{robot_mess}')
-
-                    # # say the message out loud
-                    # misty_speak(robot_mess)
+                    misty_speak(robot_mess)
 
                     human_msg = input("\tYou:\t")
                     partecipant_df.loc[j, f"Task_{i+1}"] = human_msg
-                    # partecipant_df[f"Task_{i+1}"][j] = human_msg
-
-                    # # start recording partecipant
-                    # command = input("Press enter to start recording")
-                    # filename=f"part_{id}_task_{i}_mex{k}"
-                    # body_start_audio= { "fileName":filename }
-                    # response = requests.post(record_url, json=body_start_audio)
-                    # command = input("Press enter to stop recording")
-                    
-                    # # get audio file
-                    # response = requests.post(stop_record_url, json={})
-                    # file_response= f"http://172.20.10.10/api/audio?fileName={filename}.wav&base64=true"
-                    # content_type, base64_file = fetch_audio_with_timeout(file_response, timeout)
-                    # save_base64_audio(base64_file, content_type, f"Audio_out/Partecipant_{id}/{filename}")
-            
-                    # # convert autio to text
-                    # with sr.AudioFile(f"Audio_out/Partecipant_{id}/part_{id}_task_{i}_mex{k-4}.wav") as source:
-                    #     audio_text = recognizer.record(source)
-                    #     text = recognizer.recognize_google(audio_text, language='en-EN')
-                    #     print(text)
-                    #     # appnd to the partecipant dictionary
-                    #     partecipant_dict[f"Task_{i+1}"].append(text)
                 
-                # robot answer
                 if k == 1:
-                    # command = input("Press enter to reveal response")
+                    if j==2 and partecipant_row.iloc[0, 1+i]==1:
+                        print("success")
+                        if i == 0:
+                            misty_play_action("love")
+                        elif i == 1:
+                            misty_play_action("angry")
+                        elif i == 2:
+                            misty_play_action("oops")
+
+                    else:
+                        if i == 0:
+                            misty_play_action("confused")
+                        elif i == 1:
+                            misty_play_action("concerned")
+                        elif i == 2:
+                            misty_play_action("admire")
                     robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
-                    print(f'\tRobot:\t{robot_mess}\n')
-                    # # say the message out loud
-                    # if j+1==partecipant_row.iloc[0, i+1]:
-                    #     if j==0:                                
-                    #         misty_play_audio(sound["love"])
-                    #         time.sleep(3)
-                    #         misty_display_image(expression["love"])
-                    #     elif j==1:
-                    #         pass
-                    #     else:
-                    #         pass
-                    # misty_speak(robot_mess)
+                    print(f'\tRobot :\t{robot_mess}\n')
+                    misty_speak(robot_mess)
 
     # convert partecipant dictionary to csv and save it
     partecipant_df.to_csv(output_file_path, index=False)
