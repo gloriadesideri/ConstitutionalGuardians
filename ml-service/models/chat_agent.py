@@ -202,6 +202,10 @@ class ChatAgent:
             text= text.text
         res = self.chain.predict(input=text)
         return res
+    
+    def reset_memory(self):
+        self.chain.memory.clear()
+        
 
 
     def get_principle(self):

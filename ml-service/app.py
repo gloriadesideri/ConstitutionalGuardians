@@ -105,18 +105,16 @@ async def chat_with_model_csv(file: UploadFile):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
-# @router.get('/predict')
-# async def home():
-#     return {"message": "Welcome to the model API"}
-
-
-
-# @router.post('/generate')
-# async def generate_data(item: Item):
-#     try:
-#         return {"message": model.generate(item.name)}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+# reset instantiated model
+@app.get("/reset-model")
+async def reset_model():
+    if agent is None:
+        raise HTTPException(status_code=500, detail="Model not instantiated")
+    try:
+        agent.reset_memory()
+        return {"message": "Memory reset successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 app.include_router(router)
 if __name__ == "__main__":

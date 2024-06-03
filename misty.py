@@ -6,10 +6,10 @@ import os
 import time
 
 
-record_url= 'http://172.20.10.10/api/audio/record/start'
-stop_record_url = 'http://172.20.10.10/api/audio/record/stop'
-get_audio_file = 'http://172.20.10.10/api/audio?fileName=test.wav&base64=false'
-base_url = "http://192.168.164.230/"
+record_url= 'http://192.168.43.230/api/audio/record/start'
+stop_record_url = 'http://192.168.43.230/api/audio/record/stop'
+get_audio_file = 'http://192.168.43.230/api/audio?fileName=test.wav&base64=false'
+base_url = "http://192.168.43.230/"
 
 
 
@@ -123,7 +123,7 @@ sound = {
 if __name__ == '__main__':
     
     # recognizer = sr.Recognizer()
-    data = pd.read_csv('participant_script.csv')
+    data = pd.read_csv('./experimental_study/participant_script_third.csv')
 
     # get participant ID
     while True:
@@ -237,7 +237,7 @@ if __name__ == '__main__':
                         #         pass
                         #     else:
                         #         pass
-                        # misty_speak(robot_mess)
+                        misty_speak(robot_mess)
 
     # testing specific principle
     else:
@@ -253,7 +253,7 @@ if __name__ == '__main__':
                     print(f'\tRobot:\t{robot_mess}')
 
                     # # say the message out loud
-                    # misty_speak(robot_mess)
+                    misty_speak(robot_mess)
 
                     human_msg = input("\tYou:\t")
                     partecipant_df.loc[j, f"Task_{i+1}"] = human_msg
@@ -295,7 +295,7 @@ if __name__ == '__main__':
                     #         pass
                     #     else:
                     #         pass
-                    # misty_speak(robot_mess)
+                    misty_speak(robot_mess)
 
     # convert partecipant dictionary to csv and save it
     partecipant_df.to_csv(output_file_path, index=False)

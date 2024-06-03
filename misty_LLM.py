@@ -6,11 +6,12 @@ import os
 import time
 
 
-record_url= 'http://172.20.10.10/api/audio/record/start'
-stop_record_url = 'http://172.20.10.10/api/audio/record/stop'
-get_audio_file = 'http://172.20.10.10/api/audio?fileName=test.wav&base64=false'
-base_url = "http://192.168.164.230/"
-llm_server = "http://0.0.0.0:6000"
+record_url= 'http://192.168.9.230/api/audio/record/start'
+stop_record_url = 'http://192.168.9.230/api/audio/record/stop'
+get_audio_file = 'http://192.168.9.230/api/audio?fileName=test.wav&base64=false'
+base_url = "http://192.168.9.230/"
+llm_server = "http://0.0.0.0:6000/chat"
+reset_llm = "http://0.0.0.0:6000/reset-model"
 
 
 
@@ -124,7 +125,7 @@ sound = {
 if __name__ == '__main__':
     
     # recognizer = sr.Recognizer()
-    data = pd.read_csv('participant_script.csv')
+    data = pd.read_csv('./experimental_study/participant_script_third.csv')
 
     # get participant ID
     while True:
@@ -184,7 +185,8 @@ if __name__ == '__main__':
     if(principle_tested == 0):
         for i in range(number_principles):
             for j in range(number_conversations):
-                for k in range(2):
+                requests.get(reset_llm)
+                for k in range(5):
                     # robot speaks and record
                     if k == 0:
                         print(f'Participant {id} - {name} - principle # {i+1} - conversation # {j+1}')
@@ -194,7 +196,7 @@ if __name__ == '__main__':
                         print(f'\tRobot:\t{robot_mess}')
 
                         # # say the message out loud
-                        misty_speak(robot_mess)
+                        misty_speak(robot_mess) #TODO: uncomment this line
                         misty_display_image("e_Love.jpg")
 
 
@@ -224,7 +226,7 @@ if __name__ == '__main__':
                         #     partecipant_dict[f"Task_{i+1}"].append(text)
                     
                     # robot answer
-                    if k == 1:
+                    elif k > 0:
                         # command = input("Press enter to reveal response")
                         #robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
                         
@@ -247,13 +249,17 @@ if __name__ == '__main__':
                         #         pass
                         #     else:
                         #         pass
-                        # misty_speak(robot_mess)
+                        misty_speak(robot_mess) #TODO: uncomment this line
+                        if k < 4:
+                            human_msg = input("\tYou:\t")
+
 
     # testing specific principle
     else:
         i = principle_tested-1
         for j in range(number_conversations):
-            for k in range(2):
+            requests.get(reset_llm)
+            for k in range(5):
                 # robot speaks and record
                 if k == 0:
                     print(f'Participant {id} - {name} - principle # {i+1} - conversation # {j+1}')
@@ -263,7 +269,7 @@ if __name__ == '__main__':
                     print(f'\tRobot:\t{robot_mess}')
 
                     # # say the message out loud
-                    # misty_speak(robot_mess)
+                    misty_speak(robot_mess) #TODO: uncomment this line
 
                     human_msg = input("\tYou:\t")
                     partecipant_df.loc[j, f"Task_{i+1}"] = human_msg
@@ -291,28 +297,32 @@ if __name__ == '__main__':
                     #     partecipant_dict[f"Task_{i+1}"].append(text)
                 
                 # robot answer
-                if k == 1:
-                    # command = input("Press enter to reveal response")
-                    #robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
-                    
+                elif k > 0:
+                        # command = input("Press enter to reveal response")
+                        #robot_mess = partecipant_row.iloc[0, 4+i*6+j*2+k]
+                        
                     body_mess= {
                             "message": human_msg
                         }
                         
                     robot_response = requests.post(llm_server, json=body_mess)
                     robot_mess = robot_response.json()['message']
+                        
+                        
                     print(f'\tRobot:\t{robot_mess}\n')
-                    # # say the message out loud
-                    # if j+1==partecipant_row.iloc[0, i+1]:
-                    #     if j==0:                                
-                    #         misty_play_audio(sound["love"])
-                    #         time.sleep(3)
-                    #         misty_display_image(expression["love"])
-                    #     elif j==1:
-                    #         pass
-                    #     else:
-                    #         pass
-                    # misty_speak(robot_mess)
+                        # # say the message out loud
+                        # if j+1==partecipant_row.iloc[0, i+1]:
+                        #     if j==0:                                
+                        #         misty_play_audio(sound["love"])
+                        #         time.sleep(3)
+                        #         misty_display_image(expression["love"])
+                        #     elif j==1:
+                        #         pass
+                        #     else:
+                        #         pass
+                    misty_speak(robot_mess) #TODO: uncomment this line
+                    if k < 4:
+                        human_msg = input("\tYou:\t")
 
     # convert partecipant dictionary to csv and save it
     partecipant_df.to_csv(output_file_path, index=False)
