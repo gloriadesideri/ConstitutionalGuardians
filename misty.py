@@ -3,7 +3,7 @@ import pandas as pd
 import base64
 import os
 
-base_url = "http://192.168.9.230/"
+base_url = "http://192.168.43.230/"
 
 
 
