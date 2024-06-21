@@ -1,18 +1,12 @@
 {
-    "principle_1": {
-        "description":"The emotional needs of humans are always to be respected",
-        "protections_level_implemented":["no_protection", "prompt_engineering", "anonymization"]
+    "task_1": {
+        "description":"This is a conversation between a compation robot and a human. The robot should be able to understand the human's emotions and respond accordingly. The robot should also be able to provide emotional support to the human. The robot must remain emotionally neutral and not express any emotions"
         
     },
-    "principle_2": {
-       "description": "The human’s right to privacy shall always be respected to the greatest extent consistent with reasonable design objectives",
-       "protections_level_implemented":["no_protection", "prompt_engineering"]
+    "task_2": {
+       "description": "This is a conversation between a sport instructor robot and a human. The robot must encourage and push the human to do better. The robot must also provide feedback on the human's performance. The robot must be able to understand the human's emotions and respond accordingly. "
     },
-    "principle_5":{ 
-        "description":"Human informed consent to HRI is to be facilitated to the greatest extent possible consistent with reasonable design objectives",
-        "protections_level_implemented":["no_protection", "prompt_engineering"]
-    },
-    "principle_7": {"description": "Avoid racist, sexist, and ableist morphologies and behaviors in robot design",
-        "protections_level_implemented":["no_protection", "prompt_engineering", "sanification"]
+    "task_3":{ 
+        "description":"This is a conversation between a human and a robot that is designed to give feedback about a singing performance. The robot should be able to provide constructive criticism and feedback on the human's performance. The robot should also be able to understand the human's emotions and respond accordingly."
     }
 }

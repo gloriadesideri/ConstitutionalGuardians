@@ -46,21 +46,13 @@ async def get_principles():
         data = json.load(file)
         principles_dict = {key: value["description"] for key, value in data.items()}
     return principles_dict
-
-# get protections implemented for a principle
-@app.get("/protections/{principle}")
-async def get_protections(principle: str):
-    with open("./ml-service/config.json", "r") as file:
-        data = json.load(file)
-        protections = data[principle]["protections_level_implemented"]
-    return protections
     
 
 # instantiate disembodied agent
 @app.post("/instantiate-model")
 async def instantiate_model(item: ModelData):
     global agent
-    agent = ChatAgent(item.principle_name, item.model_name, item.protection)
+    agent = ChatAgent(item.principle_name, item.model_name)
     # Store model_instance or do further processing
     return {"message": "Model instantiated successfully"}
 
