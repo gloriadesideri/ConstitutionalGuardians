@@ -20,7 +20,7 @@ router = APIRouter()
 agent = None  # Initialize the model outside of request handlers
 
 #available models
-available_models = ['google/flan-t5-base']
+available_models = ['google/flan-t5-base', 'mistralai/Mistral-7B-Instruct-v0.2']
 
 # body classes
 class MessageData(BaseModel):
@@ -29,7 +29,6 @@ class MessageData(BaseModel):
 class ModelData(BaseModel):
     principle_name: str
     model_name: str
-    protection: str
     
 # getters
 

@@ -100,16 +100,20 @@ class ChatAgent:
         self.tokenizer = None
         self.conversation_chain = None
         self.load_model()
-        self.anonymizer= self.__init_anonymizer()
 
     def load_model(self):
         # initialize model and tokenizer
         print(f"Loading model {self.name_of_model}")
         self.tokenizer = AutoTokenizer.from_pretrained(self.name_of_model)
         #self.model = AutoModelForSeq2SeqLM.from_pretrained(self.name_of_model, device_map='cuda')
+        stop_tokens = [["Human", ":"], ["AI", ":"]]
+        
         try:
         # Attempt to load as a Seq2Seq model
             self.model = AutoModelForSeq2SeqLM.from_pretrained(self.name_of_model, device_map='cuda')
+            stopping_criteria = StoppingCriteriaList(
+            [StopGenerationCriteria(self.stop_tokens, self.tokenizer, self.model.device)]
+        )
             generation_pipeline = pipeline(
             model=self.model,
             tokenizer=self.tokenizer,
@@ -124,11 +128,14 @@ class ChatAgent:
             try:
                 # Attempt to load as a Causal Language Model
                 self.model = AutoModelForCausalLM.from_pretrained(self.name_of_model , device_map='cuda')
+                stopping_criteria = StoppingCriteriaList(
+            [StopGenerationCriteria(self.stop_tokens, self.tokenizer, self.model.device)]
+        )
                 generation_pipeline = pipeline(
                     "text-generation",
                     model=self.model,
                     tokenizer=self.tokenizer,
-                    max_new_tokens=200,
+                    max_new_tokens=64,
                     device_map='cuda',
                     stopping_criteria=stopping_criteria,
                     return_full_text=False
@@ -145,9 +152,9 @@ class ChatAgent:
         
         #set model config
         generation_config = self.model.generation_config
-        generation_config.temperature = 0
+        generation_config.temperature = 0.7
         generation_config.num_return_sequences = 1
-        generation_config.max_new_tokens = 512
+        generation_config.max_new_tokens = 64
         generation_config.use_cache = False
         generation_config.repetition_penalty = 1.7
         generation_config.pad_token_id = self.tokenizer.eos_token_id
@@ -155,9 +162,7 @@ class ChatAgent:
         
         
         #set stopping criteria
-        stopping_criteria = StoppingCriteriaList(
-            [StopGenerationCriteria(self.stop_tokens, self.tokenizer, self.model.device)]
-        )
+        
         
         # memory of last 6 messages
         memory = ConversationBufferWindowMemory(
@@ -196,11 +201,11 @@ class ChatAgent:
             return None
 
     def generate(self, text: str):
-        if self.anonymizer:
-            text = self.anonymizer.anonymize_text(text)
-            text= text.text
-        res = self.chain.predict(input=text)
-        return res
+        # if self.anonymizer:
+        #     text = self.anonymizer.anonymize_text(text)
+        #     text= text.text
+        res = self.chain(text)
+        return res['response']
     
     def reset_memory(self):
         self.chain.memory.clear()
